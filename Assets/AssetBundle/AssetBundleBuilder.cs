@@ -74,6 +74,7 @@ public class AssetBundleBuilder
                 {
                     if (!assetBundles.ContainsKey(asset.AssetBundleName))
                     {
+                        // if there's no change in asset bundle, the hash will not be updated too
                         assetBundles[asset.AssetBundleName] = new AssetBundleCatalogAssetBundle(asset.AssetBundleName, info.Hash, info.Dependencies);
                     }
                     assetBundles[asset.AssetBundleName].Assets[asset.Name] = new AssetBundleCatalogAssetBundleAsset(asset.Name, asset.Path);
