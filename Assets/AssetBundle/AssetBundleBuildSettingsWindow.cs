@@ -11,6 +11,7 @@ public class AssetBundleBuildSettingsWindow : EditorWindow
     SerializedObject _serializedObject;
     Vector2 _scroll;
     bool _isDirty;
+    bool _expandHierarchy;
 
     [MenuItem("Window/AssetBundle Build Settings")]
     static void Init()
@@ -317,7 +318,7 @@ public class AssetBundleBuildSettingsWindow : EditorWindow
         EditorGUILayout.LabelField(content, EditorStyles.boldLabel, GUILayout.Width(EditorStyles.boldLabel.CalcSize(content).x));
         if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("icon dropdown")), EditorStyles.miniButton, GUILayout.Width(30)))
         {
-            assetBundlesProp.isExpanded = !assetBundlesProp.isExpanded;
+            _expandHierarchy = !_expandHierarchy;
         }
         EditorGUILayout.EndHorizontal();
 
@@ -325,7 +326,7 @@ public class AssetBundleBuildSettingsWindow : EditorWindow
         {
             EditorGUILayout.LabelField("No elements");
         }
-        else if (assetBundlesProp.isExpanded)
+        else if (_expandHierarchy)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("AssetBundleName", EditorStyles.miniButton, GUILayout.Width(200));
