@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using MemoryPack;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,10 +14,13 @@ public class AssetBundleBuilder
 {
     public static void Build(AssetBundleBuildSettings buildSettings)
     {
+        var date = DateTime.Now;
+
         if (BuildContent(out var results))
         {
             BuildSettings();
             BuildCatalog(results.BundleInfos);
+            BuildReport();
         }
 
         bool BuildContent(out IBundleBuildResults results)
@@ -39,6 +43,8 @@ public class AssetBundleBuilder
 
             var buildParams = new AssetBundleBuildParameters(buildSettings.AssetBundles, target, group, path);
             var buildContent = new BundleBuildContent(GetAssetBundleBuilds(buildSettings.Assets));
+
+            buildParams.UseCache = false;
 
             if (!Directory.Exists(path))
             {
@@ -90,6 +96,18 @@ public class AssetBundleBuilder
             }
 
             File.WriteAllBytes($"{path}/catalog.bin", MemoryPackSerializer.Serialize(catalog));
+        }
+
+        void BuildReport()
+        {
+            if (!Directory.Exists(AssetBundleBuildReport.Root))
+            {
+                Directory.CreateDirectory(AssetBundleBuildReport.Root);
+            }
+
+            var buildReport = new AssetBundleBuildReport(buildSettings.Key, date, (DateTime.Now - date).TotalMilliseconds, results);
+
+            File.WriteAllText($"{AssetBundleBuildReport.Root}/{date.ToString("yyyy-MM-dd HH-mm-ss")}.json", JsonUtility.ToJson(buildReport));
         }
     }
 

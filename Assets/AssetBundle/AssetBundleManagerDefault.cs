@@ -17,7 +17,7 @@ public class AssetBundleManagerDefault : AssetBundleManager
     {
         _loaded = new Dictionary<string, LoadedAssetBundle>();
 
-        var settings = AssetBundleSettings.Load(key);
+        var settings = MemoryPackSerializer.Deserialize<AssetBundleSettings>(File.ReadAllBytes($"{AssetBundleSettings.Root}/{key}.bin"));
 
         await LoadCatalogAsync(settings);
     }

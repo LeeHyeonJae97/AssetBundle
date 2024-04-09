@@ -13,7 +13,7 @@ public class AssetBundleBuildSettingsWindow : EditorWindow
     bool _isDirty;
     bool _expandHierarchy;
 
-    [MenuItem("Window/AssetBundle Build Settings")]
+    [MenuItem("Window/AssetBundle/Build Settings")]
     static void Init()
     {
         GetWindow<AssetBundleBuildSettingsWindow>("AssetBundle Build Settings");
@@ -423,6 +423,8 @@ public class AssetBundleBuildSettingsWindow : EditorWindow
             buildSettings.Save();
             AssetBundleBuilder.Update(buildSettings);
             AssetBundleBuilder.Build(buildSettings);
+
+            AssetBundleBuildReportWindow.Init(typeof(AssetBundleBuildSettingsWindow));
         }
         GUI.enabled = true;
 

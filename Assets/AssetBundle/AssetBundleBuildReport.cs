@@ -1,47 +1,90 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Pipeline.Interfaces;
 using UnityEngine;
 
+[Serializable]
 public class AssetBundleBuildReport
 {
-    public AssetBundleBuildReport(AssetBundleBuildSettings buildSettings, IBundleBuildResults bundleBuildResults)
+    public static string Root { get { return "Build/AssetBundle/Report"; } }
+
+    [field: SerializeField]
+    public string Key { get; private set; }
+
+    [field: SerializeField]
+    public string Date { get; private set; }
+
+    [field: SerializeField]
+    public string Elapsed { get; private set; }
+
+    [field: SerializeField]
+    public double TotalSize { get; private set; }
+
+    [field: SerializeField]
+    public double TotalCount { get; private set; }
+
+    [field: SerializeField]
+    public List<string> NewlyBuilt { get; private set; }
+
+    [field: SerializeField]
+    public List<string> Updated { get; private set; }
+
+    public AssetBundleBuildReport(string key, DateTime date, double elapsed, IBundleBuildResults bundleBuildResults)
     {
-        // ******
-        // Key  : Test
-        // Date : 2024-03-27 15:23
-        // Time : 03m 13s
+        // **** Asset Bundle ****
+        // Key         : Test
+        // Date        : 2024-03-27 15:23
+        // Time        : 03m 13s
+        // Total Size  : 1.5GB
+        // Total Count : 1,653
         //
-        // ******
-        // Newly Built AssetBundles
-        // 1. TestNested8 / LZ4 / 20.3KB        
-        //  
-        // ******
-        // Updated AssetBundles
-        // 1. TestNested10 / LZ4 / 18.29KB
+        // Newly Built :
+        //   - Assets/Test/Test1/TestNested8
+        //   - Assets/Test/Test1/TestNested8
         //
-        // ******
-        // Not Built AssetBundles
+        // Updated     :
+        //   - Assets/Test/TestNested10
+        //   - Assets/Test/TestNested10
         //
 
-        var assetResults = bundleBuildResults.AssetResults;
+        Key = key;
+        Date = date.ToString("yyyy-MM-dd HH:mm:ss");
+        Elapsed = $"{(int)(elapsed / 1000 / 60)}m {(int)(elapsed / 1000)}s";
+        TotalSize = (int)(bundleBuildResults.BundleInfos.Values.Select((bundleDetail) => new FileInfo(bundleDetail.FileName).Length).Sum() / 1000);
+        TotalCount = bundleBuildResults.BundleInfos.Count;
+        NewlyBuilt = new List<string>();
+        Updated = new List<string>();
 
-        foreach (var result in assetResults)
+        foreach (var result in bundleBuildResults.BundleInfos.Values)
         {
-            Debug.Log($"AssetResults.AssetPath : {AssetDatabase.GUIDToAssetPath(result.Value.Guid)}");
-            Debug.Log($"AssetResults.FileInfo : {new FileInfo(AssetDatabase.GUIDToAssetPath(result.Value.Guid)).LastWriteTimeUtc}");
-        }
+            var assetPath = result.FileName;
 
-        var files = Directory.GetFiles(buildSettings.Format(buildSettings.BuildPath));
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                // TODO :
+                // handle error
+            }
+            else
+            {
+                var fileInfo = new FileInfo(assetPath);
 
-        foreach(var file in files)
-        {
-            var info = new FileInfo(file);
-
-            Debug.Log($"BuiltAssetBundles.FileInfo : {file} : {info.LastWriteTimeUtc}");
+                if (fileInfo.LastWriteTime >= date)
+                {
+                    if ((fileInfo.LastWriteTime - fileInfo.CreationTime).TotalSeconds < 1)
+                    {
+                        NewlyBuilt.Add(assetPath);
+                    }
+                    else
+                    {
+                        Updated.Add(assetPath);
+                    }
+                }
+            }
         }
     }
 }
